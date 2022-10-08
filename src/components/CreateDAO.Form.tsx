@@ -1,6 +1,5 @@
 import styled, { css } from "styled-components";
 import { ComponentPropsWithRef, useMemo, useState } from "react";
-// import useGlobalModal from "hooks/globalModal";
 import useGlobalUser from "hooks/GlobalUser";
 import { WideButton } from "components/Forms/Button";
 import {
@@ -14,7 +13,7 @@ import {
 import { Radio } from "components/Forms/Radio";
 import { FlexColumn, GridContainer } from "./Common/Containers";
 import { CreateDAOOpts } from "reach/sdk";
-import { ANNOUNCER_KEY } from "utils/constants";
+import { DAO_ANNOUNCER } from "utils/constants";
 import CreateDAOAnnouncer from "./CreateDAOAnnouncer";
 
 const fieldsetCSS = css`
@@ -50,16 +49,13 @@ const QUORUM_DEFAULT = 3;
 
 export default function CreateDaoForm(props: FormProps) {
   const { onSubmit, showTitle = false, errorMessage } = props;
-  //   const { showModal, MODAL } = useGlobalModal();
   const { address } = useGlobalUser();
   const [name, setName] = useState("");
   const [description, setDesc] = useState("");
   const [fee, setFee] = useState("0");
   const [openTreasury, setOpenTreasury] = useState(false);
   const [registerSelf, setRegisterSelf] = useState(true);
-  const [announcerCtc, setAnnouncer] = useState(
-    localStorage.getItem(ANNOUNCER_KEY) || ""
-  );
+  const [announcerCtc, setAnnouncer] = useState(DAO_ANNOUNCER);
   const formData = useMemo<CreateDAOOpts>(
     () => ({
       announcerCtc,
@@ -87,10 +83,8 @@ export default function CreateDaoForm(props: FormProps) {
   }, [name, address, description]);
   const onFee = (f: string) => setFee(Math.max(Number(f), 0).toString());
   const maybeSubmit = async (): Promise<void> => {
-    if (isInvalid) return;
-    if (!address) {
-      //   showModal(MODAL.PROVIDER_SELECT);
-    } else onSubmit(formData);
+    if (address || isInvalid) return;
+    onSubmit(formData);
   };
 
   if (!announcerCtc.length)

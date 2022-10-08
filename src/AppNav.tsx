@@ -15,8 +15,12 @@ const AppNav = () => (
     <ListView
       row
       className="menu-items slide-in-right"
-      data={routes}
-      itemText={({ path, text }: any) => <Link to={path}>{text}</Link>}
+      data={routes.filter(({ isPrivate }) => !isPrivate)}
+      itemText={({ path, text }: any) => (
+        <Link to={path} title={text}>
+          {text}
+        </Link>
+      )}
     />
 
     <ConnectWallet />

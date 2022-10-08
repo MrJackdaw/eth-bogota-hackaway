@@ -40,21 +40,16 @@ export const GridContainer = styled.div<{ columns?: string }>`
   grid-gap: 0;
 `;
 
+export const PageTitle = styled.h1.attrs({ className: "h2" })`
+  margin: 0 0 1rem;
+`;
+
 export const PageContainer = styled(FlexColumn)`
   justify-content: flex-start;
   margin: 0 auto;
   max-width: 80vmin;
   min-height: 70vmax;
   text-align: left;
-
-  > h1,
-  > h2,
-  > h3,
-  > h4,
-  > h5,
-  > h6 {
-    margin: 0.5rem 0;
-  }
 
   > hr {
     background-color: ${({ theme }) => theme.colors.primary};

@@ -1,12 +1,12 @@
 import { useState, useMemo, useEffect } from "react";
-import { PageContainer } from "components/Common/Containers";
-import { createDAOAPI } from "reach/sdk";
-import useGlobalUser from "hooks/GlobalUser";
-import { DAO_ADDRESS } from "utils/constants";
-import { FormDesc } from "components/Forms/Form";
-import { resetNotifications, updateNotification } from "state";
-import { WideButton } from "components/Forms/Button";
+import { useParams } from "react-router";
 import styled from "styled-components";
+import { PageContainer } from "components/Common/Containers";
+import { WideButton } from "components/Forms/Button";
+import { FormDesc } from "components/Forms/Form";
+import useGlobalUser from "hooks/GlobalUser";
+import { createDAOAPI } from "reach/sdk";
+import { resetNotifications, updateNotification } from "state";
 
 const Pre = styled.pre`
   overflow-x: auto;
@@ -15,8 +15,9 @@ const Pre = styled.pre`
 
 const ViewDAO = () => {
   const { account } = useGlobalUser();
+  const { id: viewId } = useParams<{ id: string }>();
   const api = useMemo(
-    () => (account && DAO_ADDRESS ? createDAOAPI(account, DAO_ADDRESS) : null),
+    () => (account && viewId ? createDAOAPI(account, viewId) : null),
     [account]
   );
   const [info, setInfo] = useState<any>();

@@ -7,13 +7,19 @@ import React from "react";
 const routes: RouteDef[] = [
   { path: "/", text: "Home", component: React.lazy(() => import("./Home")) },
   {
-    path: "/dao",
+    path: "/dao/new",
     text: "Create DAO",
     component: React.lazy(() => import("./CreateDAO"))
   },
   {
-    path: "/dao/view",
+    path: "/dao/list",
+    text: "All DAOs",
+    component: React.lazy(() => import("./ListDAOs"))
+  },
+  {
+    path: "/dao/:id",
     text: "View DAO",
+    isPrivate: true,
     component: React.lazy(() => import("./ViewDAO"))
   }
 ];
@@ -24,5 +30,6 @@ export interface RouteDef {
   path: string;
   text: string;
   component?: any;
+  isPrivate?: boolean;
   render?: (p?: any) => JSX.Element;
 }

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { Alert, removeNotification } from "state";
 import styled from "styled-components";
 import { noOp } from "utils";
@@ -45,31 +45,28 @@ export default Notification;
 
 export const AutoDismissNotification = styled((props: ADNProps) => {
   const { timeout = 5000, className, notification } = props;
-  const [state, setState] = useState<ADNState>({
-    timeout: null,
-    class: `${className || ""} slide-in-left`,
-  });
-  const clear = () => {
-    if (state.timeout) clearTimeout(state.timeout as NodeJS.Timeout);
-    removeNotification(props.notification as Alert);
-  };
-  const animate = () => {
-    clearTimeout(state.timeout as NodeJS.Timeout);
-    setState({ class: `${className || ""} slide-out-left` });
-    setTimeout(clear, 500);
-  };
+  const [visible, setVisible] = useState(Boolean(true));
+  const cName = useMemo(() => {
+    const base = `${className || ""}`.trim();
+    const anim = visible ? "slide-in-left" : "slide-out-left";
+    return `${base} ${anim}`;
+  }, [visible, notification]);
+  const clear = () => removeNotification(props.notification as Alert);
 
   useEffect(() => {
-    if (state.timeout !== null) return;
-    setState({ timeout: setTimeout(animate, timeout) });
-  }, [state.class]);
+    const toggleVisible = () => setVisible(!visible);
+    const t = setTimeout(toggleVisible, timeout);
+    return () => clearTimeout(t);
+  }, []);
 
-  return (
+  return notification?.msg || notification ? (
     <Notification
       onClear={clear}
-      className={state.class}
+      className={cName}
       notification={notification.msg}
     />
+  ) : (
+    <></>
   );
 })``;
 
@@ -89,7 +86,3 @@ type ADNProps = NotificationBaseProps & {
   timeout?: number;
 };
 
-type ADNState = {
-  timeout: NodeJS.Timeout | null;
-  class: string;
-} & any;
