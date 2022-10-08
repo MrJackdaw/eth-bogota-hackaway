@@ -13,7 +13,9 @@ import {
   tokenMetadata as getReachToken,
   optInToAsset,
   loadReachWithOpts,
-  ReachEnvOpts
+  ReachEnvOpts,
+  getBlockchain,
+  ConnectedUserData
 } from "@jackcom/reachduck";
 import {
   loadStdlib,
@@ -32,14 +34,17 @@ export async function connect(provider: string) {
 /** Reconnect user session */
 export async function reconnect() {
   const { addr = undefined, isWCSession } = checkSessionExists();
-  if (isWCSession) {
-    debugger;
+  if (isWCSession || getBlockchain() === "ALGO") {
     configureWalletProvider(isWCSession ? "WalletConnect" : "MyAlgo");
-    // PeraConnect
-  } else configureWalletProvider("MyAlgo");
-  const updates = await reconnectUser(addr);
+    const updates = await reconnectUser(addr);
+    store.multiple(updates);
+    return updates.account;
+  }
+
+  // ETH/EVMs
+  configureWalletProvider();
+  const updates = await connectUser();
   store.multiple(updates);
-  return updates.account;
 }
 
 /** Dissconnect user session */
@@ -91,18 +96,18 @@ export async function checkHasToken(token: any) {
 }
 
 /** Initialize the `stdlib` instance according to the wallet provider. */
-function configureWalletProvider(pr: string) {
-  if (!["WalletConnect", "MyAlgo"].includes(pr)) return;
-  const opts: ReachEnvOpts = { network: "TestNet" };
-
-  switch (pr) {
-    case "WalletConnect": {
-      opts.walletFallback = { WalletConnect };
-      break;
+function configureWalletProvider(pr = "") {
+  const opts: ReachEnvOpts = { chain: "ETH" };
+  if (["WalletConnect", "MyAlgo"].includes(pr)) {
+    switch (pr) {
+      case "WalletConnect": {
+        opts.walletFallback = { WalletConnect };
+        break;
+      }
+      default:
+        opts.walletFallback = { MyAlgoConnect };
+        break;
     }
-    default:
-      opts.walletFallback = { MyAlgoConnect };
-      break;
   }
 
   loadReachWithOpts(loadStdlib, opts);

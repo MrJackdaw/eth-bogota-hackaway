@@ -21,10 +21,8 @@ const ConnectWallet = () => {
   const { account, address, error, loading } = useGlobalUser();
   const [modal, showModal] = useState(false);
   const [connecting, setConnecting] = useState(false);
-  const connectTo = async (prov: string) => {
+  const connectTo = async (prov = "") => {
     showModal(false);
-    if (!prov) return;
-
     setConnecting(true);
 
     try {
@@ -68,7 +66,8 @@ const ConnectWallet = () => {
           Connect Error
         </Button>
       ) : (
-        <Button onClick={() => showModal(true)}>
+        // <Button onClick={() => showModal(true)}>
+        <Button onClick={() => connectTo()}>
           {loading ? (
             <span className="spinner--before">Loading ...</span>
           ) : (
