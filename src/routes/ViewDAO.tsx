@@ -1,16 +1,24 @@
 import { useState, useMemo, useEffect } from "react";
 import { useParams } from "react-router";
-import styled from "styled-components";
-import { PageContainer } from "components/Common/Containers";
+import {
+  GridContainer,
+  PageContainer,
+  PageTitle
+} from "components/Common/Containers";
 import { WideButton } from "components/Forms/Button";
 import { FormDesc } from "components/Forms/Form";
 import useGlobalUser from "hooks/GlobalUser";
 import { createDAOAPI } from "reach/sdk";
 import { resetNotifications, updateNotification } from "state";
+import styled from "styled-components";
+import { LoadingView } from "components/Common/FullscreenLoader";
 
-const Pre = styled.pre`
-  overflow-x: auto;
-  width: 100%;
+const Buttons = styled(GridContainer)`
+  grid-template-columns: repeat(3, 1fr);
+
+  @media screen and (max-width: 600px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
 `;
 
 const ViewDAO = () => {
@@ -32,28 +40,35 @@ const ViewDAO = () => {
   };
 
   useEffect(() => {
-    if (api) loadData();
+    if (api && !info) loadData();
   }, [api]);
 
   return (
     <PageContainer padded>
-      {loading && (
-        <pre>
-          <code>Loading info ...</code>
-        </pre>
-      )}
+      {loading && <LoadingView msg="Loading DAO info" />}
       {info && api && (
         <>
-          <h1 className="h2">{info.name}</h1>
+          <PageTitle>{info.name}</PageTitle>
           <FormDesc>{info.description}</FormDesc>
-          <Pre>
-            <code>{JSON.stringify(info, null, 3)}</code>
-          </Pre>
-          {Object.keys(api).map((action) => (
-            <WideButton type="button" key={action}>
-              {action}
-            </WideButton>
-          ))}
+
+          <GridContainer columns="max-content auto">
+            <b>Membership Fee:&nbsp;</b>
+            <span>{info.fee}</span>
+          </GridContainer>
+
+          <GridContainer columns="max-content auto">
+            <b>Treasury:&nbsp;</b>
+            <span>{info.openTreasury ? " Open" : " Closed"}</span>
+          </GridContainer>
+
+          <h3 className="h3">Choose an Action</h3>
+          <Buttons>
+            {Object.keys(api).map((action) => (
+              <WideButton type="button" key={action}>
+                {action}
+              </WideButton>
+            ))}
+          </Buttons>
         </>
       )}
     </PageContainer>

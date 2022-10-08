@@ -6,7 +6,12 @@ import styled from "styled-components";
 
 const Menu = styled.nav`
   align-items: center;
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(2, auto);
+
+  @media screen and (max-width: 600px) {
+    grid-template-columns: auto;
+  }
 `;
 
 const AppNav = () => (
@@ -14,7 +19,7 @@ const AppNav = () => (
     {/* App routes */}
     <ListView
       row
-      className="menu-items slide-in-right"
+      className="menu-items slide-down-fade-in"
       data={routes.filter(({ isPrivate }) => !isPrivate)}
       itemText={({ path, text }: any) => (
         <Link to={path} title={text}>

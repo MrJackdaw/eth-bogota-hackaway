@@ -12,3 +12,9 @@ const FullScreenLoader = () => (
 );
 
 export default FullScreenLoader;
+
+export const LoadingView = ({ msg }: { msg: string }) => (
+  <pre>
+    <code>{msg} ...</code>
+  </pre>
+);

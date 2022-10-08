@@ -1,10 +1,11 @@
 import styled from "styled-components";
 import AppNav from "AppNav";
-import { FlexRow } from "components/Common/Containers";
+import { GridContainer } from "components/Common/Containers";
 import logo from "./logo.svg";
 import { Link } from "react-router-dom";
 
-const HeaderContainer = styled(FlexRow)`
+const Logo = styled(Link).attrs({ to: "/" })``;
+const HeaderContainer = styled(GridContainer)`
   background-color: ${({ theme }) => theme.colors.bgColor};
   color: ${({ theme }) => theme.colors.primary};
   height: 60px;
@@ -16,13 +17,17 @@ const HeaderContainer = styled(FlexRow)`
     height: 60px;
     pointer-events: none;
   }
+
+  @media screen and (max-width: 600px) {
+    padding-right: 0;
+  }
 `;
 
 const AppHeader = () => (
   <HeaderContainer>
-    <Link to="/">
+    <Logo>
       <img src={logo} className="logo spin" alt="App Logo" />
-    </Link>
+    </Logo>
 
     {/* Navigation Menu */}
     <AppNav />

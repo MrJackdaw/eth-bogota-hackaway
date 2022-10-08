@@ -7,7 +7,7 @@ const DARK_THEME = {
     semitransparent: "#7a7a7a42",
     error: "#c00",
     primary: "#f7f7f7",
-    secondary: "#867e00",
+    secondary: "#1c0086",
     warning: ""
   },
 
