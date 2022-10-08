@@ -1,15 +1,22 @@
 import styled, { css } from "styled-components";
-import { useMemo, useState } from "react";
+import { ComponentPropsWithRef, useMemo, useState } from "react";
 // import useGlobalModal from "hooks/globalModal";
 import useGlobalUser from "hooks/GlobalUser";
 import { WideButton } from "components/Forms/Button";
-import { Fieldset, Form, Input, Legend, Textarea } from "components/Forms/Form";
+import {
+  Fieldset,
+  Form,
+  FormDesc,
+  Input,
+  Legend,
+  Textarea
+} from "components/Forms/Form";
 import { Radio } from "components/Forms/Radio";
 import { FlexColumn, GridContainer } from "./Common/Containers";
 import { CreateDAOOpts } from "reach/sdk";
+import { ANNOUNCER_KEY } from "utils/constants";
+import CreateDAOAnnouncer from "./CreateDAOAnnouncer";
 
-const animHide = "slide-up-fade-out";
-const animShow = "slide-down-fade-in";
 const fieldsetCSS = css`
   > ${Input} {
     margin-bottom: 0.5rem;
@@ -17,12 +24,6 @@ const fieldsetCSS = css`
   p {
     font-size: 80%;
   }
-`;
-const FormDesc = styled.p<{ hide?: boolean }>`
-  animation: ${({ hide }) => (hide ? animHide : animShow)};
-  transition: height 350ms linear;
-  height: ${({ hide }) => (hide ? 0 : "auto")};
-  overflow: hidden;
 `;
 const FieldGrid = styled(Fieldset)`
   display: grid;
@@ -39,12 +40,16 @@ const Fields = styled(Fieldset)`
   ${fieldsetCSS}
 `;
 
-type FormProps = { onSubmit(d: CreateDAOOpts): any; showTitle?: boolean };
+type FormProps = Pick<ComponentPropsWithRef<"form">, "aria-disabled"> & {
+  onSubmit(d: CreateDAOOpts): any;
+  showTitle?: boolean;
+  errorMessage?: string;
+};
 
 const QUORUM_DEFAULT = 3;
 
 export default function CreateDaoForm(props: FormProps) {
-  const { onSubmit, showTitle = false } = props;
+  const { onSubmit, showTitle = false, errorMessage } = props;
   //   const { showModal, MODAL } = useGlobalModal();
   const { address } = useGlobalUser();
   const [name, setName] = useState("");
@@ -52,9 +57,12 @@ export default function CreateDaoForm(props: FormProps) {
   const [fee, setFee] = useState("0");
   const [openTreasury, setOpenTreasury] = useState(false);
   const [registerSelf, setRegisterSelf] = useState(true);
+  const [announcerCtc, setAnnouncer] = useState(
+    localStorage.getItem(ANNOUNCER_KEY) || ""
+  );
   const formData = useMemo<CreateDAOOpts>(
     () => ({
-      announcerCtc: localStorage.getItem("dao-announcer") || "",
+      announcerCtc,
       name,
       description,
       fee,
@@ -68,10 +76,15 @@ export default function CreateDaoForm(props: FormProps) {
     () => (address ? "Create DAO" : "Connect to begin"),
     [address]
   );
-  const isInvalid = useMemo(
-    () => !address || !name.length || !description.length,
-    [name, address, description]
-  );
+  const isInvalid = useMemo(() => {
+    const { "aria-disabled": override } = props;
+    return (
+      (override && override === "true") ||
+      !address ||
+      !name.length ||
+      !description.length
+    );
+  }, [name, address, description]);
   const onFee = (f: string) => setFee(Math.max(Number(f), 0).toString());
   const maybeSubmit = async (): Promise<void> => {
     if (isInvalid) return;
@@ -79,6 +92,9 @@ export default function CreateDaoForm(props: FormProps) {
       //   showModal(MODAL.PROVIDER_SELECT);
     } else onSubmit(formData);
   };
+
+  if (!announcerCtc.length)
+    return <CreateDAOAnnouncer onCreate={setAnnouncer} />;
 
   return (
     <section>
@@ -207,6 +223,11 @@ export default function CreateDaoForm(props: FormProps) {
           </FormDesc>
         </Fields>
 
+        {errorMessage && (
+          <FormDesc>
+            <b className="error--text">{errorMessage}</b>
+          </FormDesc>
+        )}
         <WideButton type="button" disabled={isInvalid} onClick={maybeSubmit}>
           <b>{submitText}</b>
         </WideButton>

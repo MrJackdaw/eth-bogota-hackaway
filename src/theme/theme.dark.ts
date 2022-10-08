@@ -5,13 +5,13 @@ const DARK_THEME = {
     accent: "#36b4c7",
     bgColor: "#282c34",
     semitransparent: "#7a7a7a42",
-    error: "",
+    error: "#c00",
     primary: "#f7f7f7",
     secondary: "#867e00",
-    warning: "",
+    warning: ""
   },
 
-  ...shared,
+  ...shared
 };
 
 export default DARK_THEME;

@@ -10,6 +10,11 @@ const routes: RouteDef[] = [
     path: "/dao",
     text: "Create DAO",
     component: React.lazy(() => import("./CreateDAO"))
+  },
+  {
+    path: "/dao/view",
+    text: "View DAO",
+    component: React.lazy(() => import("./ViewDAO"))
   }
 ];
 

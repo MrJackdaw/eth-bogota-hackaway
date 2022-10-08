@@ -17,11 +17,18 @@ export function createAnnouncerAPI(acc: ReachAccount, ctcAddress: string) {
 /** Create an Announcer stream */
 export function createAnnouncerContract(acc: ReachAccount) {
   const ctc = acc.contract(Announcer);
-  ctc.participants.Deployer({
-    done(ctc: any) {
-      const announcerAddress = parseAddress(ctc);
-      console.log({ announcerAddress });
-      return announcerAddress;
-    }
-  });
+  return new Promise<string | null>((resolve) =>
+    ctc.participants
+      .Deployer({
+        done(ctc: any) {
+          const announcerAddress = parseAddress(ctc).toString();
+          console.log({ announcerAddress });
+          resolve(announcerAddress);
+        }
+      })
+      .catch((e: any) => {
+        console.log("Announcer-deploy error", e);
+        resolve(null);
+      })
+  );
 }

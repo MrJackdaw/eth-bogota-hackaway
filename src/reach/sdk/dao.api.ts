@@ -1,11 +1,20 @@
-import { ReachAccount, parseCurrency } from "@jackcom/reachduck";
+import {
+  ReachAccount,
+  parseCurrency,
+  fromMaybe,
+  parseAddress,
+  formatCurrency,
+  createReachAPI,
+  trimByteString
+} from "@jackcom/reachduck";
 import { TalkDao } from "reach/build";
 import { ProposalAction, Vote, VoteActionType } from "types/shared";
 
 export function createDAOAPI(acc: ReachAccount, daoAddress: string) {
   const ctc = acc.contract(TalkDao, daoAddress);
   const DAO = ctc.apis;
-
+  const Views = ctc.views;
+  const reach = createReachAPI();
   const validateString = (s: string, l: number) => {
     let e: string = "";
     if (!s.length) e = "%% cannot be empty";
@@ -14,6 +23,26 @@ export function createDAOAPI(acc: ReachAccount, daoAddress: string) {
   };
 
   return {
+    /* Views */
+    async info() {
+      const info = fromMaybe(await Views.info());
+      if (!info) return null;
+      return {
+        ...info,
+        name: trimByteString(info.name),
+        description: trimByteString(info.description),
+        admin: parseAddress(info.admin),
+        fee: formatCurrency(info.fee),
+        quorum: reach.bigNumberToNumber(info.quorum)
+      };
+    },
+    currentVotes: Views.currentVotes,
+    checkIsDaoMember: Views.isMember,
+    checkMyRank: Views.myRank,
+    currentProposal: Views.Proposal,
+
+    /* Methods */
+
     /** Create a DAO-visible post */
     async post(post: string) {
       const e: string = validateString(post, 128);
@@ -26,20 +55,6 @@ export function createDAOAPI(acc: ReachAccount, daoAddress: string) {
       const e: string = validateString(post, 128);
       if (e.length) throw new Error(e.replace("%%", "Post"));
       return DAO.comment(post).catch(parseStdlibError);
-    },
-
-    /** DAO Admin: add a member to DAO
-    async addMember(addr: string) {
-      return DAO.addMember(addr).catch(parseStdlibError);
-    }, */
-
-    async donate(v: string) {
-      const amt = parseCurrency(v);
-      return DAO.donate(amt).catch(parseStdlibError);
-    },
-
-    async eject(addr: string) {
-      return DAO.eject(addr).catch(parseStdlibError);
     },
 
     async join() {

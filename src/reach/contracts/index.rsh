@@ -33,6 +33,7 @@ export const main = Reach.App(() => {
     announcerCtc: Contract,
     done: Fun([Contract], Null),
     name: Bytes(128),
+    description: Bytes(256),
     openTreasury: Bool,
     quorum: UInt,
     fee: UInt,
@@ -47,22 +48,14 @@ export const main = Reach.App(() => {
     isMember: Fun([Address], Bool),
     myRank: Fun([Address], UInt)
   });
-  const CreatorAPI = API({
-    post: Fun([Bytes(128)], Null),
-    comment: Fun([Bytes(256), Int], Null)
-  });
   const Actions = API({
-    addMember: Fun([Address], Null),
-    eject: Fun([Address], Null),
-    donate: Fun([UInt], Null),
     join: Fun([], Null),
     leave: Fun([], Null),
     registerProposal: Fun([Action], Null),
-    voteProposal: Fun([Vote], Null)
-  });
-  const MicroBlog = Events({
-    posted: [Address, Bytes(128)], // [who, post]
-    commented: [Address, Bytes(256), Int] // [who, comment, target-post-timestamp]
+    voteProposal: Fun([Vote], Null),
+    //
+    post: Fun([Bytes(128)], Null),
+    comment: Fun([Bytes(256), Int], Null)
   });
   const OrgEvents = Events({
     MotionCreated: [Action, Address],
@@ -70,7 +63,10 @@ export const main = Reach.App(() => {
     MotionRejected: [UInt, Action],
     MotionFailed: [UInt, Action],
     MemberJoined: [Address],
-    MemberExited: [Address]
+    MemberExited: [Address],
+    // MicroBlog
+    posted: [Address, Bytes(128)], // [who, post]
+    commented: [Address, Bytes(256), Int] // [who, comment, target-post-timestamp]
   });
   setOptions({ untrustworthyMaps: true, verifyArithmetic: true });
   init();
@@ -81,15 +77,23 @@ export const main = Reach.App(() => {
   };
 
   Founder.only(() => {
-    const [name, registerSelf_, quorum_, openTreasury_, fee_, announcerCtc] =
-      declassify([
-        interact.name,
-        interact.registerSelf,
-        interact.quorum,
-        interact.openTreasury,
-        interact.fee,
-        interact.announcerCtc
-      ]);
+    const [
+      name,
+      descr,
+      registerSelf_,
+      quorum_,
+      openTreasury_,
+      fee_,
+      announcerCtc
+    ] = declassify([
+      interact.name,
+      interact.description,
+      interact.registerSelf,
+      interact.quorum,
+      interact.openTreasury,
+      interact.fee,
+      interact.announcerCtc
+    ]);
 
     check(UInt.max > 1_000_000_000, "Invalid consensus state");
     checkValidateQuorum(quorum_);
@@ -97,6 +101,7 @@ export const main = Reach.App(() => {
 
   Founder.publish(
     name,
+    descr,
     registerSelf_,
     quorum_,
     openTreasury_,
@@ -112,10 +117,10 @@ export const main = Reach.App(() => {
 
   // Announce creation and send-off Founder
   const announcer = remote(announcerCtc, {
-    daoCreated: Fun([Contract], Null),
+    daoCreated: Fun([Contract, Bytes(128), Bytes(256)], Null),
     daoClosed: Fun([Contract], Null)
   });
-  announcer.daoCreated(daoID);
+  announcer.daoCreated(daoID, name, descr);
   Founder.interact.done(daoID);
 
   const getMember = (who) => fromSome(members[who], outsider);
@@ -204,6 +209,7 @@ export const main = Reach.App(() => {
       About.info.set(
         OrgInfo_S.fromObject({
           name: name,
+          description: descr,
           founder: Founder,
           ...admin
         })
@@ -220,74 +226,6 @@ export const main = Reach.App(() => {
         balance() < UInt.max
     )
     .while(alive)
-
-    // Add member to group
-    .api_(Actions.addMember, (who) => {
-      check(memberRank(who) >= minRank, LOW_RANK);
-      check(isNone(members[who]), MEMBER_EXISTS);
-
-      return [
-        admin.fee,
-
-        (k) => {
-          addMember(who, minRank);
-          k(null);
-          return [proposal, admin, true];
-        }
-      ];
-    })
-
-    // Eject member (if admin; else, create proposal if there's a slot)
-    .api_(Actions.donate, (amt) => {
-      check(balance() < UInt.max - amt, "Donation is too generous");
-
-      return [
-        amt,
-
-        (k) => {
-          if (isSome(members[this])) {
-            const [oldRank, lastVoted] = getMember(this);
-            members[this] =
-              oldRank < UInt.max - 1
-                ? [oldRank + 1, lastVoted]
-                : [dMax(oldRank, minRank), lastVoted];
-          }
-          k(null);
-          return [proposal, admin, alive];
-        }
-      ];
-    })
-
-    // Eject member (if admin; else, create proposal if there's a slot)
-    .api_(Actions.eject, (who) => {
-      const ejectAction = Action.EjectMember(who);
-      const canEject = validateProposal(ejectAction, admin, members, minRank);
-      check(this !== who, "Use 'Leave' API to exit");
-      check(isSome(members[who]), MEMBER_NOT_EXISTS);
-      check(canEject, "Requires ChangeAdmin proposal");
-
-      if (this !== admin.admin) {
-        const { action, index } = proposal;
-        check(index <= UInt.max - 1, "Proposals Limit reached");
-        check(
-          validateProposal(action, admin, members, minRank),
-          PROPOSAL_ACTIVE
-        );
-      }
-
-      return [
-        (k) => {
-          k(null);
-
-          if (this == admin.admin) {
-            removeMember(who);
-            return [proposal, admin, alive];
-          } else {
-            return createProposal(proposal.index, ejectAction, admin);
-          }
-        }
-      ];
-    })
 
     // Self-register
     .api_(Actions.join, () => {
@@ -382,24 +320,24 @@ export const main = Reach.App(() => {
       ];
     })
 
-    .api_(CreatorAPI.post, (post) => {
+    .api_(Actions.post, (post) => {
       check(isSome(members[this]), MEMBER_NOT_EXISTS);
       return [
         (k) => {
           k(null);
-          MicroBlog.posted(this, post);
+          OrgEvents.posted(this, post);
           return [proposal, admin, true];
         }
       ];
     })
 
-    .api_(CreatorAPI.comment, (comment, targetBlockTime) => {
+    .api_(Actions.comment, (comment, targetBlockTime) => {
       check(isSome(members[this]), MEMBER_NOT_EXISTS);
 
       return [
         (k) => {
           k(null);
-          MicroBlog.commented(this, comment, targetBlockTime);
+          OrgEvents.commented(this, comment, targetBlockTime);
           return [proposal, admin, true];
         }
       ];

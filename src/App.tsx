@@ -12,11 +12,10 @@ import ActiveNotifications from "components/ActiveNotifications";
 function App() {
   const sTheme = getTheme();
   const [theme, setTheme] = useState(THEME[sTheme] || {});
-  // const [user, setUser] = useState("");
 
   useEffect(() => {
     /* Change your document title here */
-    document.title = "Reach + ReactJS Starter App";
+    document.title = "DAO DApp";
 
     /* Listen to theme changes; you can expand on this functionality */
     const onTheme = (s: any) => setTheme(THEME[s.theme as UIThemeType]);

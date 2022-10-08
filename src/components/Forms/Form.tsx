@@ -181,3 +181,12 @@ export const Controls = styled(FlexRow)`
     text-align: center;
   }
 `;
+
+const animHide = "slide-up-fade-out";
+const animShow = "slide-down-fade-in";
+export const FormDesc = styled.p<{ hide?: boolean }>`
+  animation: ${({ hide }) => (hide ? animHide : animShow)};
+  transition: height 350ms linear;
+  height: ${({ hide }) => (hide ? 0 : "auto")};
+  overflow: hidden;
+`;

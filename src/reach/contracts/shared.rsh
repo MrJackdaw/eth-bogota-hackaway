@@ -42,6 +42,7 @@ export const OrgInfo_S = Struct([
   ["name", Bytes(128)],
   ["founder", Address],
   ["admin", Address],
+  ["description", Bytes(256)],
   ["fee", UInt],
   ["registerSelf", Bool],
   ["quorum", UInt],
