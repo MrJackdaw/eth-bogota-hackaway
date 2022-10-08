@@ -4,6 +4,14 @@ import { createDAOAPI } from "reach/sdk";
 import useGlobalUser from "hooks/GlobalUser";
 import { DAO_ADDRESS } from "utils/constants";
 import { FormDesc } from "components/Forms/Form";
+import { resetNotifications, updateNotification } from "state";
+import { WideButton } from "components/Forms/Button";
+import styled from "styled-components";
+
+const Pre = styled.pre`
+  overflow-x: auto;
+  width: 100%;
+`;
 
 const ViewDAO = () => {
   const { account } = useGlobalUser();
@@ -16,7 +24,9 @@ const ViewDAO = () => {
   const loadData = async () => {
     if (!api) return;
     setLoading(true);
+    const id = resetNotifications("Loading DAO info ...", true);
     setInfo(await api.info());
+    updateNotification(id, "DAO Loaded");
     setLoading(false);
   };
 
@@ -31,10 +41,18 @@ const ViewDAO = () => {
           <code>Loading info ...</code>
         </pre>
       )}
-      {info && (
+      {info && api && (
         <>
           <h1 className="h2">{info.name}</h1>
           <FormDesc>{info.description}</FormDesc>
+          <Pre>
+            <code>{JSON.stringify(info, null, 3)}</code>
+          </Pre>
+          {Object.keys(api).map((action) => (
+            <WideButton type="button" key={action}>
+              {action}
+            </WideButton>
+          ))}
         </>
       )}
     </PageContainer>
