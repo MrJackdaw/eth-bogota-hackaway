@@ -63,6 +63,10 @@ export const PageContainer = styled(FlexColumn)`
     margin: 1.5rem 0;
     opacity: 0.6;
   }
+
+  @media screen and (max-width: 600px) {
+    max-width: 95vmin;
+  }
 `;
 
 export const Figure = styled.figure`

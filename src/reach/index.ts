@@ -14,8 +14,7 @@ import {
   optInToAsset,
   loadReachWithOpts,
   ReachEnvOpts,
-  getBlockchain,
-  ConnectedUserData
+  getBlockchain
 } from "@jackcom/reachduck";
 import {
   loadStdlib,

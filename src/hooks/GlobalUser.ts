@@ -32,3 +32,5 @@ export function useGlobalUser() {
   const updates = { ...state };
   return updates;
 }
+
+export default useGlobalUser;

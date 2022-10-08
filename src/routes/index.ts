@@ -6,7 +6,11 @@ import React from "react";
  */
 const routes: RouteDef[] = [
   { path: "/", text: "Home", component: React.lazy(() => import("./Home")) },
-  { path: "/demo", text: "Demo", component: React.lazy(() => import("./Demo")) },
+  {
+    path: "/dao",
+    text: "Create DAO",
+    component: React.lazy(() => import("./CreateDAO"))
+  }
 ];
 
 export default routes;
