@@ -9,6 +9,7 @@ const Wrapper = styled(FlexRow)`
   border-radius: ${({ theme }) => theme.presets.rounded};
   box-shadow: ${({ theme }) => theme.presets.elevated.md};
   margin-bottom: ${({ theme }) => theme.sizes.xs};
+  pointer-events: all;
   width: 100%;
 
   .material-icons {
@@ -56,7 +57,10 @@ export const AutoDismissNotification = styled((props: ADNProps) => {
   useEffect(() => {
     const toggleVisible = () => setVisible(!visible);
     const t = setTimeout(toggleVisible, timeout);
-    return () => clearTimeout(t);
+    return () => {
+      clearTimeout(t);
+      clear();
+    };
   }, []);
 
   return notification?.msg || notification ? (

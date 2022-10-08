@@ -15,6 +15,14 @@ const sharedRadioStyles = css`
   order: -1;
   width: initial;
 `;
+const animHide = "slide-up-fade-out";
+const animShow = "slide-down-fade-in";
+export const FormDesc = styled.p<{ hide?: boolean }>`
+  animation: ${({ hide }) => (hide ? animHide : animShow)};
+  transition: height 350ms linear;
+  height: ${({ hide }) => (hide ? 0 : "auto")};
+  overflow: hidden;
+`;
 export const Fieldset = styled.fieldset`
   border: 1px solid ${({ theme }) => theme.colors.semitransparent};
   border-radius: ${({ theme }) => theme.presets.rounded.sm};
@@ -34,7 +42,28 @@ export const Input = styled.input`
     ${sharedRadioStyles}
   }
 `;
-
+const fieldsetCSS = css`
+  > ${Input} {
+    margin-bottom: 0.5rem;
+  }
+  p {
+    font-size: 80%;
+  }
+`;
+export const FieldGrid = styled(Fieldset)`
+  display: grid;
+  gap: 0.4rem;
+  grid-template-columns: repeat(2, 1fr);
+  ${fieldsetCSS}
+  ${FormDesc} {
+    grid-column: 1 / grid-column-end;
+  }
+`;
+export const Fields = styled(Fieldset)`
+  display: flex;
+  flex-direction: column;
+  ${fieldsetCSS}
+`;
 export const Textarea = styled.textarea`
   ${sharedInputStyles};
   height: 120px;
@@ -67,7 +96,7 @@ export const RadioLabel = styled(Label)`
   }
 `;
 export const Legend = styled.legend`
-  color: ${({ theme }) => theme.colors.secondary};
+  color: ${({ theme }) => theme.colors.primary};
   font-size: ${({ theme }) => theme.sizes.md};
   font-weight: 600;
   line-height: ${({ theme }) => theme.sizes.md};
@@ -180,13 +209,4 @@ export const Controls = styled(FlexRow)`
     font-weight: bold;
     text-align: center;
   }
-`;
-
-const animHide = "slide-up-fade-out";
-const animShow = "slide-down-fade-in";
-export const FormDesc = styled.p<{ hide?: boolean }>`
-  animation: ${({ hide }) => (hide ? animHide : animShow)};
-  transition: height 350ms linear;
-  height: ${({ hide }) => (hide ? 0 : "auto")};
-  overflow: hidden;
 `;

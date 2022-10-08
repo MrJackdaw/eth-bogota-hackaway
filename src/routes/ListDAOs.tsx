@@ -1,11 +1,10 @@
 import { useState, useEffect } from "react";
 import { PageContainer, PageTitle } from "components/Common/Containers";
 import DAOItem from "components/DAOItem";
-import { DAOEvent, subscribeToDAOs } from "reach/sdk";
+import { DAOEvent } from "reach/sdk";
 import useGlobalUser from "hooks/GlobalUser";
-import { DAO_ANNOUNCER } from "utils/constants";
 import { LoadingView } from "components/Common/FullscreenLoader";
-import Daos, { addDAO } from "state/daos";
+import Daos from "state/daos";
 
 const loadingMsgs = [
   "Loading DAOs",
@@ -20,21 +19,14 @@ const ListDAOs = () => {
   const { account } = useGlobalUser();
   const { daos: list } = Daos.getState();
   const [daosList, setDAOs] = useState<DAOEvent[]>(list);
-  const unsubscribe = Daos.subscribeToKeys(
-    ({ daos }) => Array.isArray(daos) && setDAOs(daos),
-    ["daos"]
-  );
+  const unsubscribe = () => {
+    Daos.subscribeToKeys(
+      ({ daos }) => Array.isArray(daos) && setDAOs(daos),
+      ["daos"]
+    );
+  };
 
-  useEffect(() => {
-    if (account) {
-      // Get all DAO registrations since the beginning of time
-      subscribeToDAOs(account, {
-        ctcAddress: DAO_ANNOUNCER,
-        onDAOReceived: addDAO
-      });
-    }
-    return unsubscribe;
-  }, [account]);
+  useEffect(() => unsubscribe, [account]);
 
   return (
     <PageContainer padded>

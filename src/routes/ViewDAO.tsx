@@ -6,7 +6,13 @@ import {
   PageTitle
 } from "components/Common/Containers";
 import { WideButton } from "components/Forms/Button";
-import { FormDesc } from "components/Forms/Form";
+import {
+  Fields,
+  FormDesc,
+  Input,
+  Legend,
+  Textarea
+} from "components/Forms/Form";
 import useGlobalUser from "hooks/GlobalUser";
 import { createDAOAPI } from "reach/sdk";
 import { resetNotifications, updateNotification } from "state";
@@ -60,6 +66,15 @@ const ViewDAO = () => {
             <b>Treasury:&nbsp;</b>
             <span>{info.openTreasury ? " Open" : " Closed"}</span>
           </GridContainer>
+
+          <Fields>
+            <Legend>Say something:</Legend>
+            <Textarea
+              onChange={({ target }) => console.log(target.value)}
+              placeholder="Enter up to 128 characters"
+              maxLength={128}
+            />
+          </Fields>
 
           <h3 className="h3">Choose an Action</h3>
           <Buttons>

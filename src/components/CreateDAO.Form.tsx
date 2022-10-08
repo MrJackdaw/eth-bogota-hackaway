@@ -1,9 +1,9 @@
-import styled, { css } from "styled-components";
 import { ComponentPropsWithRef, useMemo, useState } from "react";
 import useGlobalUser from "hooks/GlobalUser";
 import { WideButton } from "components/Forms/Button";
 import {
-  Fieldset,
+  FieldGrid,
+  Fields,
   Form,
   FormDesc,
   Input,
@@ -15,29 +15,6 @@ import { FlexColumn, GridContainer } from "./Common/Containers";
 import { CreateDAOOpts } from "reach/sdk";
 import { DAO_ANNOUNCER } from "utils/constants";
 import CreateDAOAnnouncer from "./CreateDAOAnnouncer";
-
-const fieldsetCSS = css`
-  > ${Input} {
-    margin-bottom: 0.5rem;
-  }
-  p {
-    font-size: 80%;
-  }
-`;
-const FieldGrid = styled(Fieldset)`
-  display: grid;
-  gap: 0.4rem;
-  grid-template-columns: repeat(2, 1fr);
-  ${fieldsetCSS}
-  ${FormDesc} {
-    grid-column: 1 / grid-column-end;
-  }
-`;
-const Fields = styled(Fieldset)`
-  display: flex;
-  flex-direction: column;
-  ${fieldsetCSS}
-`;
 
 type FormProps = Pick<ComponentPropsWithRef<"form">, "aria-disabled"> & {
   onSubmit(d: CreateDAOOpts): any;

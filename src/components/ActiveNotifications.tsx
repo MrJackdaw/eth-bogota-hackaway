@@ -14,6 +14,7 @@ const NotificationGroup = styled(FlexColumn)`
   overflow: hidden auto;
   padding: ${({ theme }) => theme.sizes.sm};
   position: fixed;
+  pointer-events: none;
   width: 100%;
   z-index: 9999;
 
