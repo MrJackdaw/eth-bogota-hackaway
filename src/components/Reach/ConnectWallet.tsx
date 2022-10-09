@@ -16,6 +16,7 @@ import { connect, reconnect } from "reach";
 import { useGlobalUser } from "hooks/GlobalUser";
 import polygonLogo from "images/bclogo-polygon.png";
 import moonbaseLogo from "images/bclogo-moonbeam.png";
+import klaytnLogo from "images/bclogo-klaytn.png";
 import ImageLoader from "components/Common/ImageLoader";
 import { ANNOUNCER_KEY, DAO_ANNOUNCER, EVM_CHAIN } from "utils/constants";
 
@@ -23,7 +24,8 @@ const providers = [
   // { name: "My Algo", value: "MyAlgo" },
   // { name: "WalletConnect", value: "WalletConnect" }
   { name: "Polygon (Mumbai)", value: "Polygon", src: polygonLogo },
-  { name: "Moonbeam (Testnet)", value: "Moonbase Alpha", src: moonbaseLogo }
+  { name: "Moonbeam (Testnet)", value: "Moonbase Alpha", src: moonbaseLogo },
+  { name: "Klaytn (Baobab)", value: "Klaytn", src: klaytnLogo }
 ];
 
 const ConnectWallet = () => {
