@@ -93,29 +93,31 @@ const ViewDAO = () => {
           <PageDesc>{daoInfo.description}</PageDesc>
 
           {daoInfo.isMember && (
-            <Form onSubmit={(e) => e.preventDefault()}>
-              <Fields>
-                <Legend>Post something</Legend>
-                <Textarea
-                  onChange={({ target }) => setUserPost(target.value)}
-                  placeholder="Enter up to 128 characters"
-                  maxLength={128}
-                  value={userPost || ""}
-                />
-              </Fields>
+            <>
+              <Form onSubmit={(e) => e.preventDefault()}>
+                <Fields>
+                  <Legend>Post something</Legend>
+                  <Textarea
+                    onChange={({ target }) => setUserPost(target.value)}
+                    placeholder="Enter up to 128 characters"
+                    maxLength={128}
+                    value={userPost || ""}
+                  />
+                </Fields>
 
-              <PostButton
-                type="button"
-                disabled={loading || !allowPost}
-                onClick={createPost}
-              >
-                Share to {daoInfo.name}
-              </PostButton>
-            </Form>
+                <PostButton
+                  type="button"
+                  disabled={loading || !allowPost}
+                  onClick={createPost}
+                >
+                  Share to {daoInfo.name}
+                </PostButton>
+              </Form>
+
+              <h3 className="h3">Posts</h3>
+              <DAOPostNotifications ctcAddress={daoInfo.id} />
+            </>
           )}
-
-          <h3 className="h3">Posts</h3>
-          <DAOPostNotifications ctcAddress={daoInfo.id} />
 
           <h3 className="h3">Choose an Action</h3>
           <Buttons>
