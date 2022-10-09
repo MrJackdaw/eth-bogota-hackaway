@@ -9,11 +9,25 @@ import {
   formatCurrency,
   createReachAPI,
   trimByteString,
-  truncateString
+  truncateString,
+  ReachEvent,
+  reach
 } from "@jackcom/reachduck";
+import { DateTime } from "luxon";
 import { TalkDao } from "reach/build";
 import { ProposalAction, Vote, VoteActionType } from "types/shared";
-import { noOp } from "utils";
+import { noOp, timeAgo } from "utils";
+
+export type DAOInfo = {
+  id: string;
+  name: string;
+  description: string;
+  admin: string;
+  fee: string;
+  quorum: number;
+  isMember: boolean;
+  openTreasury: boolean;
+};
 
 /** Create an object for interacting with the DAO */
 export function createDAOAPI(acc: ReachAccount, daoAddress: string) {
@@ -43,30 +57,34 @@ export function createDAOAPI(acc: ReachAccount, daoAddress: string) {
     async checkMyRank(): Promise<number> {
       return fromMaybe<any>(await Views.myRank(), reach.bigNumberToNumber, 0);
     },
-    async info() {
+    async daoInfo(): Promise<DAOInfo | null> {
       const info = fromMaybe(await Views.info());
       if (!info) return null;
+      const address = reach.formatAddress(acc);
+      const isMember = fromMaybe(await Views.isMember(address)) || false;
       return {
-        ...info,
+        ...info, // founder and current admin addresses
+        id: daoAddress,
         name: trimByteString(info.name),
         description: trimByteString(info.description),
-        admin: parseAddress(info.admin),
+        admin: parseAddress(info.admin).toString(),
         fee: formatCurrency(info.fee),
-        quorum: reach.bigNumberToNumber(info.quorum)
+        quorum: reach.bigNumberToNumber(info.quorum),
+        isMember
       };
     },
 
     /* Methods */
 
     /** Create a DAO-visible post */
-    async post(post: string) {
+    async createPost(post: string) {
       const e: string = validateString(post, 128);
       if (e.length) throw new Error(e.replace("%%", "Post"));
       return DAO.post(post).catch(parseStdlibError);
     },
 
     /** Comment on a DAO-visible post, referenced by block timestamp */
-    async comment(post: string) {
+    async commentOnPost(post: string) {
       const e: string = validateString(post, 128);
       if (e.length) throw new Error(e.replace("%%", "Post"));
       return DAO.comment(post).catch(parseStdlibError);
@@ -96,32 +114,63 @@ export function createDAOAPI(acc: ReachAccount, daoAddress: string) {
   };
 }
 
+export type FormattedPost = {
+  postId: string;
+  who: string;
+  text: string;
+  time: number;
+};
+export type ListPostsOpts = {
+  ctcAddress: string;
+  onPostReceived(d: FormattedPost): any;
+};
 /** Get notified when a new post is created */
-export function subscribeToPosts(acc: ReachAccount, ctcAddress: string) {
+export function subscribeToPosts(acc: ReachAccount, opts: ListPostsOpts) {
+  const { ctcAddress, onPostReceived = noOp } = opts;
   const ctc = acc.contract(TalkDao, ctcAddress);
+  const reach = createReachAPI();
   ctc.events.posted.monitor((e) => {
-    const { what } = e;
+    const { what, when } = e;
     const [who, text] = what;
-    return {
-      who: truncateString(`${parseAddress(who)}`, 4),
-      text: trimByteString(text)
-    };
+
+    reach.getTimeSecs(when).then((bigSecs) => {
+      return onPostReceived({
+        postId: parseAddress(when).toString(),
+        who: truncateString(`${parseAddress(who)}`, 4),
+        text: trimByteString(text),
+        time: reach.bigNumberToNumber(bigSecs)
+      });
+    });
   });
 }
 
+// const ms = 1000;
+
+export type FormattedComment = {
+  postId: string;
+  commentId: string;
+  commenter: string;
+  text: string;
+};
+export type ListCommentsOpts = {
+  ctcAddress: string;
+  onCommentReceived(d: FormattedComment): any;
+};
 /** Get notified when a new comment is posted */
-export function subscribeToComments(acc: ReachAccount, ctcAddress: string) {
+export function subscribeToComments(acc: ReachAccount, opts: ListCommentsOpts) {
+  const { ctcAddress, onCommentReceived = noOp } = opts;
   const ctc = acc.contract(TalkDao, ctcAddress);
   const reach = createReachAPI();
   ctc.events.commented.monitor((e) => {
     const { what, when } = e;
-    const postId = reach.bigNumberToNumber(when);
-    const [who, text] = what;
-    return {
-      postId,
+    const commentId = reach.bigNumberToNumber(when).toString();
+    const [who, comment, postId] = what;
+    onCommentReceived({
+      postId: parseAddress(postId).toString(),
+      commentId,
       commenter: truncateString(`${parseAddress(who)}`, 4),
-      text: trimByteString(text)
-    };
+      text: trimByteString(comment)
+    });
   });
 }
 
@@ -140,7 +189,11 @@ const DaoAPIs = [
 ];
 
 function parseStdlibError(error: any): Promise<string> {
-  const e = error.message.split("Assertion failed: ")[1];
+  const src = error?.message || error || "";
+  if (src.toLowerCase().includes("user rejected transaction")) {
+    return Promise.reject("Transaction was canceled");
+  }
+  const e = src.split("Assertion failed: ")[1];
   const m = e.split("at reach standard library:")[0];
   const trim = DaoAPIs.reduce((agg, curr) => agg.replace(`${curr}: `, ""), m);
   return Promise.reject(trim);

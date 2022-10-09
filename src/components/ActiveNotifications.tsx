@@ -22,7 +22,7 @@ const NotificationGroup = styled(FlexColumn)`
     border-radius: ${({ theme }) => theme.presets.rounded.sm};
   }
 `;
-
+/** All `Alerts` that go into the global state */
 const ActiveNotifications = styled(() => {
   const { lastTenNotifications: msgs } = useGlobalNotifications();
   if (!msgs.length) return <></>;

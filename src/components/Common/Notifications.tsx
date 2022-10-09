@@ -55,13 +55,16 @@ export const AutoDismissNotification = styled((props: ADNProps) => {
   const clear = () => removeNotification(props.notification as Alert);
 
   useEffect(() => {
-    const toggleVisible = () => setVisible(!visible);
+    const toggleVisible = () => {
+      if (notification.persistent) return;
+      setVisible(!visible);
+    };
     const t = setTimeout(toggleVisible, timeout);
     return () => {
       clearTimeout(t);
       clear();
     };
-  }, []);
+  }, [notification.msg]);
 
   return notification?.msg || notification ? (
     <Notification

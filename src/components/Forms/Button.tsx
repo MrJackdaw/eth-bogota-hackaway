@@ -42,3 +42,13 @@ export const WideButton = styled(ButtonBase).attrs({ size: "lg" })`
   margin: 0 0 ${({ theme }) => theme.sizes.sm};
   max-width: calc(100% - 2px);
 `;
+
+export type IconButtonProps = Pick<
+  AllButtonProps,
+  "onClick" | "title" | "id" | "className" | "disabled" | "aria-disabled"
+> & { icon: string };
+export const IconButton = ({ icon, ...rest }: IconButtonProps) => (
+  <RoundButton type="button" {...rest}>
+    <span className="material-icons">{icon}</span>
+  </RoundButton>
+);
