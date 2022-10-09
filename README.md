@@ -1,9 +1,39 @@
-# React + Reach Application Scaffold
+# MicroDAO
 
 ## What is it? 
 
-Inspired by [@zetsuboii's starter pack](https://github.com/Zetsuboii/reach-react-starter). This is a quick scaffold/template for building a `ReactJS` and `Reach Lang` DApp. The development env and build process are handled by **webpack**.\
-If you need to add or modify Webpack config overrides, consider using [@craco](https://github.com/gsoft-inc/craco/blob/master/packages/craco/README.md#installation)
+A microblogging + DAO platform. Topics or Communities are individual DAOs, each with their own treasury and some limited governance mechanisms. Membership fees are determined by each community; users can join as few or as many as they wish. 
+
+`MicroDAO` was tested on Polygon Mumbai, but can likely be run on any EVM.
+
+## Additional Notes
+- All DAOs use the network token as currency. 
+- Voting is free for DAO members, but restricted to one vote per member (address).
+- Registration is halted while a proposal is active.
+
+
+---
+## How do I use it?
+
+1. `npm install` 
+2. `npm run start` (launches at `localhost:3000`) 
+3. Open up MetaMask and make sure the **Polygon Mumbai** testnet is selected.
+   1. Look [**here**](https://chainlist.org/) for a quick way to add it to MetaMask
+4. Connect your wallet.
+
+There is only one DAO right now, but you can create as many as you like. 
+
+Take a look at [Available Scripts](#available-scripts) for additional CLI commands.
+
+### Reach Helpers
+This project includes some helpful bits, including 
+* A self-contained [state instance](https://github.com/JACK-COM/raphsducks). You can subscribe to it like any other state.
+* A `connect` button that will automatically trigger a wallet connection.\
+    Default network is Algorand, but if your `stdlib` instance is using `ETH`, it will trigger MetaMask.
+* A [light API](https://www.npmjs.com/package/@jackcom/reachduck#methods) for interacting with your `@reach/stdlib` instance.
+
+
+---
 
 ## What does it contain? 
 
@@ -16,37 +46,8 @@ If you need to add or modify Webpack config overrides, consider using [@craco](h
 * [🦆 raphsducks](https://github.com/JACK-COM/raphsducks): an unopinonated state manager.
 * [🦆 reachduck](https://github.com/JACK-COM/reachduck): a simple API for interacting with the blockchain and/or a reach `stdlib` instance
 
----
-## How do I use it?
-
-1. Clone the project
-2. `cd path/to/my-project`
-3. `rm -rf .git && git init` (create a fresh git repository for your project)
-4. `npm install` 
-5. `npm run start` (launches at `localhost:3000`) 
-
-Take a look at [Available Scripts](#available-scripts) for additional CLI commands.
-
-### Reach Helpers
-This project includes some helpful bits, including 
-* A self-contained [state instance](https://github.com/JACK-COM/raphsducks). You can subscribe to it like any other state.
-* A `connect` button that will automatically trigger a wallet connection.\
-    Default network is Algorand, but if your `stdlib` instance is using `ETH`, it will trigger MetaMask.
-* A stub `Reach` application to get you started on your multichain smart contracts. I personally use the directory to store my compiled contracts. 
-* A [light API](https://www.npmjs.com/package/@jackcom/reachduck#methods) for interacting with your `@reach/stdlib` instance.
-
-
----
-## Additional Notes
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app). It does not use any `react-script` or `webpack` configuration overrides. 
-
-### Reach CLI
-**Note:** If you don't have the `reach` compiler installed, run this in your project directory to download it (and make the downloaded item executable)
-```
-  $ curl https://docs.reach.sh/reach -o reach ; chmod +x reach
-```
-
-Learn more [here](https://docs.reach.sh/index.html).
+### Reach Platform
+**Reach** allows the creation of multi-chain smart contracts with a single language, which compiles down to JS and the native code for each chain. Learn more [here](https://docs.reach.sh/index.html).
 
 ---
 
