@@ -8,14 +8,9 @@ import AppHeader from "AppHeader";
 import "./App.scss";
 import { UIThemeType } from "types/shared";
 import ActiveNotifications from "components/ActiveNotifications";
-import useGlobalUser from "hooks/GlobalUser";
-import { subscribeToDAOs } from "reach/sdk";
-import { DAO_ANNOUNCER } from "utils/constants";
-import { addDAO } from "state/daos";
 
 function App() {
   const sTheme = getTheme();
-  const { account } = useGlobalUser();
   const [theme, setTheme] = useState(THEME[sTheme] || {});
 
   useEffect(() => {
@@ -24,14 +19,6 @@ function App() {
 
     /* Listen to theme changes; you can expand on this functionality */
     const onTheme = (s: any) => setTheme(THEME[s.theme as UIThemeType]);
-
-    if (account) {
-      // Get all DAO registrations since the beginning of time
-      subscribeToDAOs(account, {
-        ctcAddress: DAO_ANNOUNCER,
-        onDAOReceived: addDAO
-      });
-    }
 
     /**
      * This is how you 1. Subscribe to a state, and 2. Get an 'unsubscribe' function.

@@ -21,17 +21,46 @@ import {
   ALGO_WalletConnect as WalletConnect
 } from "@reach-sh/stdlib";
 import MyAlgoConnect from "@randlabs/myalgo-connect";
+import {
+  ANNOUNCER_KEY,
+  EVMChainId,
+  EVM_CHAIN,
+  SupportedEVMs
+} from "utils/constants";
 
 /** Connect user Wallet */
-export async function connect(provider: string) {
-  configureWalletProvider(provider);
-  const updates = await connectUser();
-  store.multiple(updates);
-  return updates.account;
+export async function connect(prov: string) {
+  const done = async () => {
+    configureWalletProvider(prov);
+    const updates = await connectUser();
+    store.multiple(updates);
+    return updates.account;
+  };
+
+  // EVMs
+  if (SupportedEVMs.includes(prov)) {
+    // @ts-ignore
+    const eth = window.ethereum;
+    const requestedChainId = EVMChainId(prov);
+    if (requestedChainId !== eth?.chainId) {
+      try {
+        localStorage.removeItem(ANNOUNCER_KEY);
+        return await switchNetwork(prov, requestedChainId)
+          .then(done)
+          .catch((e) => {
+            throw e;
+          });
+      } catch (e: any) {
+        throw e;
+      }
+    }
+  }
+
+  return done();
 }
 
 /** Reconnect user session */
-export async function reconnect() {
+export async function reconnect(evmProvider?: string) {
   const { addr = undefined, isWCSession } = checkSessionExists();
   if (isWCSession || getBlockchain() === "ALGO") {
     configureWalletProvider(isWCSession ? "WalletConnect" : "MyAlgo");
@@ -41,15 +70,18 @@ export async function reconnect() {
   }
 
   // ETH/EVMs
-  configureWalletProvider();
+  configureWalletProvider(evmProvider);
   const updates = await connectUser();
   store.multiple(updates);
+  return updates.account;
 }
 
 /** Dissconnect user session */
 export async function disconnect() {
-  store.reset();
   addNotification("Disconnecting ... ");
+  store.reset();
+  localStorage.removeItem(ANNOUNCER_KEY);
+  localStorage.removeItem(EVM_CHAIN);
   disconnectUser();
 }
 
@@ -110,4 +142,21 @@ function configureWalletProvider(pr = "") {
   }
 
   loadReachWithOpts(loadStdlib, opts);
+}
+
+async function switchNetwork(name: string, chainId: string) {
+  try {
+    // @ts-ignore
+    const eth = window.ethereum;
+    await eth.request({
+      method: "wallet_switchEthereumChain",
+      params: [{ chainId }]
+    });
+  } catch (switchError: any) {
+    const msg =
+      switchError.code === 4902
+        ? `${name} has not been added to MetaMask`
+        : `Could not select network "${name}"`;
+    addNotification(`❌ ${msg}`);
+  }
 }

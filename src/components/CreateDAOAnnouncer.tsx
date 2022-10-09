@@ -1,7 +1,7 @@
 import { noOp } from "@jackcom/reachduck";
 import useGlobalUser from "hooks/GlobalUser";
 import { createAnnouncerContract } from "reach/sdk";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { ANNOUNCER_KEY } from "utils/constants";
 import { WideButton } from "./Forms/Button";
 import { FormDesc } from "./Forms/Form";
@@ -15,6 +15,10 @@ export const CreateDAOAnnouncer = (props: CreateProps) => {
   const { onCreate = noOp, onError = noOp } = props;
   const { account } = useGlobalUser();
   const [error, setError] = useState("");
+  const stored = useMemo(
+    () => localStorage.getItem(ANNOUNCER_KEY),
+    [account, props]
+  );
   const onSubmit = async () => {
     const ctc = await createAnnouncerContract(account);
     if (ctc === null) {
@@ -27,7 +31,7 @@ export const CreateDAOAnnouncer = (props: CreateProps) => {
     }
   };
 
-  return localStorage.getItem(ANNOUNCER_KEY) ? (
+  return stored ? (
     <></>
   ) : (
     <section>

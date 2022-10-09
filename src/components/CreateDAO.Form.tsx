@@ -32,7 +32,7 @@ export default function CreateDaoForm(props: FormProps) {
   const [fee, setFee] = useState("0");
   const [openTreasury, setOpenTreasury] = useState(false);
   const [registerSelf, setRegisterSelf] = useState(true);
-  const [announcerCtc, setAnnouncer] = useState(DAO_ANNOUNCER);
+  const [announcerCtc, setAnnouncer] = useState(DAO_ANNOUNCER());
   const formData = useMemo<CreateDAOOpts>(
     () => ({
       announcerCtc,
@@ -60,7 +60,7 @@ export default function CreateDaoForm(props: FormProps) {
   }, [name, address, description]);
   const onFee = (f: string) => setFee(Math.max(Number(f), 0).toString());
   const maybeSubmit = async (): Promise<void> => {
-    if (address || isInvalid) return;
+    if (!address || isInvalid) return;
     onSubmit(formData);
   };
 
