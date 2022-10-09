@@ -14,19 +14,14 @@ import Modal from "components/Common/Modal";
 import { FlexColumn, GridContainer } from "components/Common/Containers";
 import { connect, reconnect } from "reach";
 import { useGlobalUser } from "hooks/GlobalUser";
-import polygonLogo from "images/bclogo-polygon.png";
-import moonbaseLogo from "images/bclogo-moonbeam.png";
-import klaytnLogo from "images/bclogo-klaytn.png";
 import ImageLoader from "components/Common/ImageLoader";
-import { ANNOUNCER_KEY, DAO_ANNOUNCER, EVM_CHAIN } from "utils/constants";
+import {
+  ANNOUNCER_KEY,
+  DAO_ANNOUNCER,
+  EVMProviders,
+  EVM_CHAIN
+} from "utils/constants";
 
-const providers = [
-  // { name: "My Algo", value: "MyAlgo" },
-  // { name: "WalletConnect", value: "WalletConnect" }
-  { name: "Polygon (Mumbai)", value: "Polygon", src: polygonLogo },
-  { name: "Moonbeam (Testnet)", value: "Moonbase Alpha", src: moonbaseLogo },
-  { name: "Klaytn (Baobab)", value: "Klaytn", src: klaytnLogo }
-];
 
 const ConnectWallet = () => {
   const { account, address, error, loading } = useGlobalUser();
@@ -91,11 +86,11 @@ const ConnectWallet = () => {
         </Button>
       ) : (
         // <Button onClick={() => showModal(true)}>
-        <GridContainer columns="repeat(2, 1fr) max-content">
+        <GridContainer columns="repeat(4, 1fr)">
           {exists || connecting || loading ? (
             <span className="spinner--before">Loading ...</span>
           ) : (
-            providers.map((p) => (
+            EVMProviders.map((p) => (
               <RoundButton
                 disabled={loading || connecting}
                 key={p.value}
@@ -111,7 +106,7 @@ const ConnectWallet = () => {
       {modal && (
         <Modal title="Select Wallet Provider" onClose={() => showModal(false)}>
           <FlexColumn style={{ alignSelf: "stretch", placeContent: "center" }}>
-            {providers.map((p) => (
+            {EVMProviders.map((p) => (
               <WideButton key={p.value} onClick={() => connectTo(p.value)}>
                 <b>{p.name}</b>
               </WideButton>
